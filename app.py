@@ -1,6 +1,6 @@
 import json
 
-from flask import Flask, redirect, request
+from flask import Flask, redirect, request, render_template
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -9,7 +9,7 @@ tasks = json.load(open('tasks.json'))
 
 tokenizer = AutoTokenizer.from_pretrained(
     "Grossmend/rudialogpt3_medium_based_on_gpt2")
-model = AutoModelForCausalLM.from_pretrained(
+text_model = AutoModelForCausalLM.from_pretrained(
     "Grossmend/rudialogpt3_medium_based_on_gpt2")
 
 def get_length_param(text: str) -> str:
@@ -27,26 +27,26 @@ def get_length_param(text: str) -> str:
 
 @app.route('/')
 def hello_world():  # put application's code here
-    return redirect('/test/0?score=0')
+    return redirect('/test/0')
 
 
-@app.route('/test/<int:id>')
+@app.route('/test/<int:id>', methods=['GET', 'POST'])
 def test(id):  # put application's code here
-    question = ''
-    answer = request.args.get('answer')
-    if answer:
+    question = tasks[id]['q']
+    if id == 0:
+        placeholder = 'возраст'
+    elif id == len(tasks):
+        placeholder = 'реакция'
+    else:
+        placeholder = 'ответ'
+    if request.method == 'POST':
+        answer = request.form.get('answer')
         input_user = question + ' ' + answer
-
-        # encode the new user input, add parameters and return a tensor in Pytorch
         new_user_input_ids = tokenizer.encode(
             f"|0|{get_length_param(input_user)}|" + input_user + tokenizer.eos_token + "|1|1|",
             return_tensors="pt")
-
-        # append the new user input tokens to the chat history
         bot_input_ids = new_user_input_ids
-
-        # generated a response
-        chat_history_ids = model.generate(
+        chat_history_ids = text_model.generate(
             bot_input_ids,
             num_return_sequences=1,
             max_length=512,
@@ -61,15 +61,18 @@ def test(id):  # put application's code here
             pad_token_id=tokenizer.pad_token_id,
             device='cuda',
         )
-
-        # pretty print last ouput tokens from bot
         bot_answer = tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
-
     else:
         answer = ''
         bot_answer = ''
-    print(bot_answer)
-    return 'test'
+    args = {
+        'placeholder': placeholder,
+        'number': id,
+        'question': question,
+        'answer': answer,
+        'bot_answer': bot_answer
+    }
+    return render_template('login.html', **args)
 
 
 if __name__ == '__main__':
