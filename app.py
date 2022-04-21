@@ -1,16 +1,16 @@
 import json
 
 from flask import Flask, redirect, request, render_template
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+# import torch
+# from transformers import AutoModelForCausalLM, AutoTokenizer
 
 app = Flask(__name__)
 tasks = json.load(open('tasks.json'))
 
-tokenizer = AutoTokenizer.from_pretrained(
-    "Grossmend/rudialogpt3_medium_based_on_gpt2")
-text_model = AutoModelForCausalLM.from_pretrained(
-    "Grossmend/rudialogpt3_medium_based_on_gpt2")
+# tokenizer = AutoTokenizer.from_pretrained(
+#     "Grossmend/rudialogpt3_medium_based_on_gpt2")
+# text_model = AutoModelForCausalLM.from_pretrained(
+#     "Grossmend/rudialogpt3_medium_based_on_gpt2")
 
 def get_length_param(text: str) -> str:
     tokens_count = len(tokenizer.encode(text))
@@ -22,7 +22,7 @@ def get_length_param(text: str) -> str:
         len_param = '3'
     else:
         len_param = '-'
-    return len_param
+    return '1'
 
 
 @app.route('/')
@@ -62,15 +62,19 @@ def test(id):  # put application's code here
             device='cuda',
         )
         bot_answer = tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
+        is_form = False
     else:
         answer = ''
-        bot_answer = ''
+        bot_answer = 'test test test'
+        is_form = True
     args = {
         'placeholder': placeholder,
         'number': id,
         'question': question,
         'answer': answer,
-        'bot_answer': bot_answer
+        'bot_answer': bot_answer,
+        'is_form': is_form,
+        'next_id': id+1
     }
     return render_template('login.html', **args)
 
