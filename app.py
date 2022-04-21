@@ -65,7 +65,7 @@ def test(id):  # put application's code here
         is_form = False
     else:
         answer = ''
-        bot_answer = 'test test test'
+        bot_answer = ''
         is_form = True
     args = {
         'placeholder': placeholder,
