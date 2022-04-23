@@ -12,7 +12,7 @@ from transformers import T5ForConditionalGeneration, T5Tokenizer
 
 app = Flask(__name__)
 tasks = json.load(open('tasks.json'))
-
+img_list = [f'img_{i}.png' for i in range(17) if i != 12] + ['image3.jpeg']
 text_tokenizer = AutoTokenizer.from_pretrained(
     "Grossmend/rudialogpt3_medium_based_on_gpt2")
 text_model = AutoModelForCausalLM.from_pretrained(
@@ -134,7 +134,8 @@ def test(id):  # put application's code here
         'bot_answer': bot_answer,
         'is_form': is_form,
         'next_id': (id+1) % 17,
-        'score': score
+        'score': score,
+        'img_path': img_list[id]
     }
     return render_template('login.html', **args)
 
