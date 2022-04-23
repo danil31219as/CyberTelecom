@@ -24,7 +24,7 @@ vae = get_vae(dwt=True).to(device)
 # pipeline utils:
 realesrgan = get_realesrgan('x2', device=device)
 clip, processor = ruclip.load('ruclip-vit-base-patch32-384', device=device)
-clip_predictor = ruclip.Predictor(clip, processor, device, bs=8)
+clip_predictor = ruclip.Predictor(clip, processor, device, bs=1)
 
 def get_length_param(text: str) -> str:
     tokens_count = len(text_tokenizer.encode(text))
@@ -88,7 +88,7 @@ def test(id):  # put application's code here
         ]:
             _pil_images, _scores = generate_images(question, dalle_tokenizer, dalle, vae,
                                                    top_k=top_k,
-                                                   images_num=images_num, bs=8,
+                                                   images_num=images_num, bs=1,
                                                    top_p=top_p)
             pil_images += _pil_images
             scores += _scores
